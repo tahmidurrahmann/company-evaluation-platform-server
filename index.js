@@ -33,7 +33,7 @@ async function run() {
   try {
 
     const reviewCollection = client.db("iOne").collection("reviews");
-
+    const userCollection = client.db("iOne").collection("users");
 
     app.post('/jwt', async (req, res) => {
       const user = req.body
@@ -41,11 +41,11 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
       console.log(token)
       res
-        .cookie('token', token,{
+        .cookie('token', token, {
           httpOnly: true,
           secure: false
         })
-        .send({success : true})
+        .send({ success: true })
     })
 
 
@@ -54,7 +54,27 @@ async function run() {
       res.send(result);
     })
 
-   
+    app.post("/user", async (req, res) => {
+      const userInfo = req.body;
+      const userEmail = userInfo?.email;
+      const query = { email: userEmail };
+      const findUser = await userCollection.findOne(query);
+      if (findUser) {
+        return res.send("user already exists");
+      }
+      else {
+        const result = await userCollection.insertOne(userInfo);
+        res.send(result);
+      }
+    })
+
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const findUser = await userCollection.findOne(query);
+      const isAdmin = findUser?.role === "admin";
+      res.send({ isAdmin })
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
