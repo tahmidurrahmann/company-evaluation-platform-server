@@ -76,6 +76,14 @@ async function run() {
       res.send({ isAdmin })
     })
 
+    app.get("/users/hr/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const findUser = await userCollection.findOne(query);
+      const isHr = findUser?.role === "hr";
+      res.send({ isHr })
+    })
+
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
