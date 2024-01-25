@@ -17,6 +17,12 @@ app.use(cors({
 }))
 app.use(express.json());
 app.use(cookieParser())
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
@@ -33,7 +39,7 @@ async function run() {
   try {
 
     const reviewCollection = client.db("iOne").collection("reviews");
-
+    const userCollection = client.db("iOne").collection("users");
 
     app.post('/jwt', async (req, res) => {
       const user = req.body
@@ -41,11 +47,11 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
       console.log(token)
       res
-        .cookie('token', token,{
+        .cookie('token', token, {
           httpOnly: true,
           secure: false
         })
-        .send({success : true})
+        .send({ success: true })
     })
 
 
@@ -54,7 +60,40 @@ async function run() {
       res.send(result);
     })
 
-   
+    app.post("/user", async (req, res) => {
+      const userInfo = req.body;
+      const userEmail = userInfo?.email;
+      const query = { email: userEmail };
+      const findUser = await userCollection.findOne(query);
+      if (findUser) {
+        return res.send("user already exists");
+      }
+      else {
+        const result = await userCollection.insertOne(userInfo);
+        res.send(result);
+      }
+    })
+
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const findUser = await userCollection.findOne(query);
+      const isAdmin = findUser?.role === "admin";
+      res.send({ isAdmin })
+    })
+
+    app.get("/users/hr/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const findUser = await userCollection.findOne(query);
+      const isHr = findUser?.role === "hr";
+      res.send({ isHr })
+    })
+
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
