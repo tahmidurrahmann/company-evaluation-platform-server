@@ -40,6 +40,7 @@ async function run() {
 
     const reviewCollection = client.db("iOne").collection("reviews");
     const userCollection = client.db("iOne").collection("users");
+    const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
 
     app.post('/jwt', async (req, res) => {
       const user = req.body
@@ -90,9 +91,28 @@ async function run() {
       res.send({ isHr })
     })
 
+    app.post("/formDetails", async (req, res) => {
+      const formInfo = req?.body;
+      const email = formInfo?.email;
+      const query = { email: email };
+      const findUser = await hrAndUserCollection.findOne(query);
+      if (findUser) {
+        return res.send("form user already exists");
+      }
+      else {
+        const result = await hrAndUserCollection.insertOne(formInfo);
+        res.send(result);
+      }
+    })
+
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
+    })
+
+    app.get("/allAgreements", async (req, res) => {
+      const result = await hrAndUserCollection.find().toArray();
+      return res.send(result);
     })
 
     await client.db("admin").command({ ping: 1 });
