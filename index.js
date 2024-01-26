@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT | 5000;
 require('dotenv').config()
 const cors = require('cors');
@@ -41,6 +41,7 @@ async function run() {
     const reviewCollection = client.db("iOne").collection("reviews");
     const userCollection = client.db("iOne").collection("users");
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
+    const employeeCollection = client.db("iOne").collection("employee");
 
     app.post('/jwt', async (req, res) => {
       const user = req.body
@@ -105,6 +106,77 @@ async function run() {
       }
     })
 
+    app.post("/employee", async (req, res) => {
+      const formInfo = req?.body;
+      const email = formInfo?.email;
+      const query = { email: email };
+      const findUser = await employeeCollection.findOne(query);
+      if (findUser) {
+        return res.send("form user already exists");
+      }
+      else {
+        const result = await employeeCollection.insertOne(formInfo);
+        res.send(result);
+      }
+    })
+
+    app.patch("/makeHr/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "checked",
+        },
+      };
+      const result1 = await hrAndUserCollection.updateOne(filter, updateDoc);
+      const findUser = await hrAndUserCollection.findOne(filter);
+      const userEmail = findUser?.email;
+      const filter1 = { email: userEmail };
+      const updateDoc1 = {
+        $set: {
+          role: "hr",
+        },
+      };
+      const result2 = await userCollection.updateOne(filter1, updateDoc1);
+      res.send({ result1, result2 })
+    })
+
+    app.patch('/rejectHrRequest/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "rejected",
+        },
+      };
+      const result = await hrAndUserCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
+    app.patch("/makeUser/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "checked",
+        },
+      };
+      const result = await employeeCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
+    app.patch("/rejectUserRequest/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "rejected",
+        },
+      };
+      const result = await employeeCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
@@ -112,6 +184,11 @@ async function run() {
 
     app.get("/allAgreements", async (req, res) => {
       const result = await hrAndUserCollection.find().toArray();
+      return res.send(result);
+    })
+
+    app.get("/employee", async (req, res) => {
+      const result = await employeeCollection.find().toArray();
       return res.send(result);
     })
 
