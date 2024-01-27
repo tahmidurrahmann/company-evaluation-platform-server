@@ -39,9 +39,7 @@ async function run() {
 
     app.post('/jwt', async (req, res) => {
       const user = req.body
-      console.log(user)
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-      console.log(token)
       res
         .cookie('token', token, {
           httpOnly: true,
@@ -135,15 +133,10 @@ async function run() {
       res.send({ result1, result2 })
     })
 
-    app.patch('/rejectHrRequest/:id', async (req, res) => {
+    app.delete('/rejectHrRequest/:id', async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: {
-          status: "rejected",
-        },
-      };
-      const result = await hrAndUserCollection.updateOne(filter, updateDoc);
+      const query = { _id: new ObjectId(id) };
+      const result = await hrAndUserCollection.deleteOne(query);
       res.send(result);
     })
 
@@ -159,15 +152,10 @@ async function run() {
       res.send(result);
     })
 
-    app.patch("/rejectUserRequest/:id", async (req, res) => {
+    app.delete("/rejectUserRequest/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: {
-          status: "rejected",
-        },
-      };
-      const result = await employeeCollection.updateOne(filter, updateDoc);
+      const query = { _id: new ObjectId(id) };
+      const result = await employeeCollection.deleteOne(query);
       res.send(result);
     })
 
@@ -179,6 +167,20 @@ async function run() {
     app.get("/allAgreements", async (req, res) => {
       const result = await hrAndUserCollection.find().toArray();
       return res.send(result);
+    })
+
+    app.get('/allAgreements/:email', async (req, res) => {
+      const userEmail = req.params.email;
+      const email = {email : userEmail};
+      const result = await hrAndUserCollection.findOne(email);
+      res.send(result);
+    })
+
+    app.get('/employee/:email', async (req, res) => {
+      const userEmail = req.params.email;
+      const email = {email : userEmail};
+      const result = await employeeCollection.findOne(email);
+      res.send(result);
     })
 
     app.get("/employee", async (req, res) => {
