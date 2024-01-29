@@ -43,6 +43,17 @@ async function run() {
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
     const employeeCollection = client.db("iOne").collection("employee");
 
+    
+    app.post('/imployeeTasks', async (req, res) => {
+      const newTask = req.body;
+      const result = await imployeeTasksCollection.insertOne(newTask)
+      res.send(result)
+    })
+
+    app.get('/imployeeTasks', async (req, res) => {
+      const result = await imployeeTasksCollection.find().toArray()
+      res.send(result)
+    })
     app.post('/jwt', async (req, res) => {
       const user = req.body
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
@@ -73,7 +84,7 @@ async function run() {
         res.send(result);
       }
     })
-
+    
     app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
@@ -177,14 +188,14 @@ async function run() {
 
     app.get('/allAgreements/:email', async (req, res) => {
       const userEmail = req.params.email;
-      const email = {email : userEmail};
+      const email = { email: userEmail };
       const result = await hrAndUserCollection.findOne(email);
       res.send(result);
     })
 
     app.get('/employee/:email', async (req, res) => {
       const userEmail = req.params.email;
-      const email = {email : userEmail};
+      const email = { email: userEmail };
       const result = await employeeCollection.findOne(email);
       res.send(result);
     })
