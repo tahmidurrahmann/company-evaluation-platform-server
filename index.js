@@ -37,16 +37,16 @@ async function run() {
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
     const employeeCollection = client.db("iOne").collection("employee");
 
-    app.post('/jwt', async (req, res) => {
-      const user = req.body
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-      res
-        .cookie('token', token, {
-          httpOnly: true,
-          secure: false
-        })
-        .send({ success: true })
-    })
+    // app.post('/jwt', async (req, res) => {
+    //   const user = req.body
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+    //   res
+    //     .cookie('token', token, {
+    //       httpOnly: true,
+    //       secure: false
+    //     })
+    //     .send({ success: true })
+    // })
 
 
     app.get("/reviews", async (req, res) => {
