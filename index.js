@@ -8,21 +8,21 @@ require('dotenv').config()
 const cors = require('cors');
 
 
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://evaluation-platform-client.web.app'
-  ],
-  credentials: true
-}))
+// app.use(cors({
+//   origin: [
+//     'http://localhost:5173',
+//     'https://evaluation-platform-client.web.app'
+//   ],
+//   credentials: true
+// }))
 app.use(express.json());
 app.use(cookieParser())
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+//   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+//   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//   next();
+// });
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
@@ -42,8 +42,8 @@ async function run() {
     const userCollection = client.db("iOne").collection("users");
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
     const employeeCollection = client.db("iOne").collection("employee");
+    const imployeeTasksCollection = client.db("iOne").collection("imployeeTasks");
 
-    
     app.post('/imployeeTasks', async (req, res) => {
       const newTask = req.body;
       const result = await imployeeTasksCollection.insertOne(newTask)
@@ -54,16 +54,17 @@ async function run() {
       const result = await imployeeTasksCollection.find().toArray()
       res.send(result)
     })
-    app.post('/jwt', async (req, res) => {
-      const user = req.body
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-      res
-        .cookie('token', token, {
-          httpOnly: true,
-          secure: false
-        })
-        .send({ success: true })
-    })
+
+    // app.post('/jwt', async (req, res) => {
+    //   const user = req.body
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+    //   res
+    //     .cookie('token', token, {
+    //       httpOnly: true,
+    //       secure: false
+    //     })
+    //     .send({ success: true })
+    // })
 
 
     app.get("/reviews", async (req, res) => {
@@ -84,7 +85,7 @@ async function run() {
         res.send(result);
       }
     })
-    
+
     app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
