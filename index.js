@@ -56,8 +56,24 @@ async function run() {
     })
 
     app.get('/imployeeTasks', async (req, res) => {
-      const result = await imployeeTasksCollection.find().toArray()
+      const email = req.query.email;
+      const filter = { email }
+      const result = await imployeeTasksCollection.find(filter).toArray()
       res.send(result)
+    })
+
+    app.put("/moveTask", async (req, res) => {
+      const task = req.query.task;
+      const id = req.query.id;
+      const filter = { _id : new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status : task,
+        },
+      };
+      const result = await imployeeTasksCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
     })
 
     app.post('/jwt', async (req, res) => {
