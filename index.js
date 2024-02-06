@@ -63,7 +63,6 @@ async function run() {
 
     app.get("/hrAndUsers/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await hrAndUserCollection.findOne(query);
       res.send(result);
@@ -214,6 +213,17 @@ async function run() {
 
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result1 = await hrAndUserCollection.findOne(query);
+      const email =  result1?.email;
+      const filter = { email: email };
+      const result2 = await userCollection.deleteOne(filter);
+      const result = await hrAndUserCollection.deleteOne(filter);
       res.send(result);
     })
 
