@@ -26,7 +26,7 @@ app.use(express.json());
 //   next();
 // });
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
+const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -67,6 +67,7 @@ async function run() {
       const result = await hrAndUserCollection.findOne(query);
       res.send(result);
     })
+
 
     app.get('/imployeeTasks/:email', async (req, res) => {
       const email = req.params.email;
@@ -211,6 +212,8 @@ async function run() {
       res.send(result);
     })
 
+    // testing 
+
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
@@ -264,5 +267,5 @@ app.get("/", (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Company Evaluation Platform is Running on port ${port}`);
+  console.log(`Company Evaluation Platform is Running on port ${ port }`);
 })
