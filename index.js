@@ -7,15 +7,17 @@ const port = process.env.PORT | 5000;
 require('dotenv').config()
 const cors = require('cors');
 
-
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://evaluation-platform-client.web.app'
+    'https://company-evaluation-platform-server.vercel.app'
   ],
   credentials: true
 }))
+
+app.use(cors());
 app.use(express.json());
+
 app.use(cookieParser())
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
@@ -23,7 +25,6 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
 });
-
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -59,6 +60,13 @@ async function run() {
       // const email = req.query.email;
       // const filter = { email }
       const result = await imployeeTasksCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.get('/imployeeTasks/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const result = await imployeeTasksCollection.find(filter).toArray()
       res.send(result)
     })
 
