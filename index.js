@@ -41,6 +41,7 @@ async function run() {
 
     const reviewCollection = client.db("iOne").collection("reviews");
     const userCollection = client.db("iOne").collection("users");
+    const noticeCollection = client.db("iOne").collection("notices");
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
     const employeeCollection = client.db("iOne").collection("employee");
     const imployeeTasksCollection = client.db("iOne").collection("imployeeTasks");
@@ -65,6 +66,12 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await hrAndUserCollection.findOne(query);
+      res.send(result);
+    })
+
+    app.post("/noticeInfo", async (req, res) => {
+      const notice = req.body;
+      const result = await noticeCollection.insertOne(notice);
       res.send(result);
     })
 
@@ -211,6 +218,8 @@ async function run() {
       res.send(result);
     })
 
+    // testing 
+
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
@@ -220,7 +229,7 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result1 = await hrAndUserCollection.findOne(query);
-      const email =  result1?.email;
+      const email = result1?.email;
       const filter = { email: email };
       const result2 = await userCollection.deleteOne(filter);
       const result = await hrAndUserCollection.deleteOne(filter);
