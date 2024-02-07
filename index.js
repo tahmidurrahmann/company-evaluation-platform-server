@@ -26,7 +26,7 @@ app.use(express.json());
 //   next();
 // });
 
-const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -41,6 +41,7 @@ async function run() {
 
     const reviewCollection = client.db("iOne").collection("reviews");
     const userCollection = client.db("iOne").collection("users");
+    const noticeCollection = client.db("iOne").collection("notices");
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
     const employeeCollection = client.db("iOne").collection("employee");
     const imployeeTasksCollection = client.db("iOne").collection("imployeeTasks");
@@ -68,6 +69,11 @@ async function run() {
       res.send(result);
     })
 
+    app.post("/noticeInfo", async (req, res) => {
+      const notice = req.body;
+      const result = await noticeCollection.insertOne(notice);
+      res.send(result);
+    })
 
     app.get('/imployeeTasks/:email', async (req, res) => {
       const email = req.params.email;
@@ -223,7 +229,7 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result1 = await hrAndUserCollection.findOne(query);
-      const email =  result1?.email;
+      const email = result1?.email;
       const filter = { email: email };
       const result2 = await userCollection.deleteOne(filter);
       const result = await hrAndUserCollection.deleteOne(filter);
@@ -267,5 +273,5 @@ app.get("/", (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Company Evaluation Platform is Running on port ${ port }`);
+  console.log(`Company Evaluation Platform is Running on port ${port}`);
 })
