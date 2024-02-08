@@ -45,11 +45,17 @@ async function run() {
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
     const employeeCollection = client.db("iOne").collection("employee");
     const imployeeTasksCollection = client.db("iOne").collection("imployeeTasks");
+    const hrShareMeetCollection = client.db("iOne").collection("meetLink");
 
     app.post('/imployeeTasks', async (req, res) => {
       const newTask = req.body;
       const result = await imployeeTasksCollection.insertOne(newTask)
       res.send(result)
+    })
+
+    app.get("/notice", async (req, res) => {
+      const result = await noticeCollection.find().toArray();
+      res.send(result);
     })
 
     app.get("/hrAndUsers", async (req, res) => {
@@ -259,6 +265,13 @@ async function run() {
       const result = await employeeCollection.find().toArray();
       return res.send(result);
     })
+
+    app.post('/meetLink',async(req,res)=>{
+      const MeetLinks =req.body;
+      const result =await hrShareMeetCollection.insertOne(MeetLinks)
+      res.send(result)
+    })
+   
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
