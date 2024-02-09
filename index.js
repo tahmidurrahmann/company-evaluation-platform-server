@@ -266,12 +266,16 @@ async function run() {
       return res.send(result);
     })
 
-    app.post('/meetLink',async(req,res)=>{
-      const MeetLinks =req.body;
-      const result =await hrShareMeetCollection.insertOne(MeetLinks)
+    app.post('/meetLink', async (req, res) => {
+      const MeetLinks = req.body;
+      const result = await hrShareMeetCollection.insertOne(MeetLinks)
       res.send(result)
     })
-   
+
+    app.get("/meetLink", async (req, res) => {
+      const result = await hrShareMeetCollection.find().toArray();
+      return res.send(result);
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
