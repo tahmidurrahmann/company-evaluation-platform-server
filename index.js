@@ -1,32 +1,31 @@
 const express = require('express');
-// const jwt = require('jsonwebtoken')
-// const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT | 5000;
 require('dotenv').config()
 const cors = require('cors');
 
-// app.use(cors({
-//   origin: [
-//     'http://localhost:5173',
-//     'https://company-evaluation-platform-server.vercel.app'
-//   ],
-//   credentials: true
-// }))
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://company-evaluation-platform-server.vercel.app'
+  ],
+  credentials: true
+}))
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser())
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
-// app.use(cookieParser())
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-//   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-//   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-//   next();
-// });
-
-const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -41,6 +40,7 @@ async function run() {
 
     const reviewCollection = client.db("iOne").collection("reviews");
     const userCollection = client.db("iOne").collection("users");
+    const noticeCollection = client.db("iOne").collection("notices");
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
     const employeeCollection = client.db("iOne").collection("employee");
     const imployeeTasksCollection = client.db("iOne").collection("imployeeTasks");
@@ -52,14 +52,34 @@ async function run() {
       res.send(result)
     })
 
+    app.get("/notice", async (req, res) => {
+      const result = await noticeCollection.find().toArray();
+      res.send(result);
+    })
+
     app.get("/hrAndUsers", async (req, res) => {
       const result = await hrAndUserCollection.find().toArray();
       res.send(result);
     })
 
     app.get('/imployeeTasks', async (req, res) => {
+      // const email = req.query.email;
+      // const filter = { email }
       const result = await imployeeTasksCollection.find().toArray()
       res.send(result)
+    })
+
+    app.get("/hrAndUsers/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await hrAndUserCollection.findOne(query);
+      res.send(result);
+    })
+
+    app.post("/noticeInfo", async (req, res) => {
+      const notice = req.body;
+      const result = await noticeCollection.insertOne(notice);
+      res.send(result);
     })
 
     app.get('/imployeeTasks/:email', async (req, res) => {
@@ -69,6 +89,10 @@ async function run() {
       res.send(result)
     })
 
+    app.get("/hrAndUsers", async (req, res) => {
+      const result = await hrAndUserCollection.find().toArray();
+      res.send(result);
+    })
     app.put("/moveTask", async (req, res) => {
       const task = req.query.task;
       const id = req.query.id;
@@ -81,18 +105,19 @@ async function run() {
       };
       const result = await imployeeTasksCollection.updateOne(filter, updateDoc, options);
       res.send(result);
+
     })
 
-    // app.post('/jwt', async (req, res) => {
-    //   const user = req.body
-    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-    //   res
-    //     .cookie('token', token, {
-    //       httpOnly: true,
-    //       secure: false
-    //     })
-    //     .send({ success: true })
-    // })
+    app.post('/jwt', async (req, res) => {
+      const user = req.body
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+      res
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: false
+        })
+        .send({ success: true })
+    })
 
 
     app.get("/reviews", async (req, res) => {
@@ -212,6 +237,17 @@ async function run() {
       res.send(result);
     })
 
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result1 = await hrAndUserCollection.findOne(query);
+      const email = result1?.email;
+      const filter = { email: email };
+      const result2 = await userCollection.deleteOne(filter);
+      const result = await hrAndUserCollection.deleteOne(filter);
+      res.send(result);
+    })
+
     app.get("/allAgreements", async (req, res) => {
       const result = await hrAndUserCollection.find().toArray();
       return res.send(result);
@@ -236,18 +272,20 @@ async function run() {
       return res.send(result);
     })
 
-    app.post('/meetLink',async(req,res)=>{
-      const MeetLinks =req.body;
-      const result =await hrShareMeetCollection.insertOne(MeetLinks)
+    app.post('/meetLink', async (req, res) => {
+      const MeetLinks = req.body;
+      const result = await hrShareMeetCollection.insertOne(MeetLinks)
       res.send(result)
     })
-   
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
+  }
+  finally {
   }
 }
+
 run().catch(console.dir);
 
 
@@ -256,5 +294,5 @@ app.get("/", (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Company Evaluation Platform is Running on port ${ port }`);
+  console.log(`Company Evaluation Platform is Running on port ${port}`);
 })
