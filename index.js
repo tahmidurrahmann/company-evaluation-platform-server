@@ -279,6 +279,12 @@ async function run() {
     })
 
 
+    app.get("/meetLink", async (req, res) => {
+      const result = await hrShareMeetCollection.find().toArray();
+      return res.send(result);
+    })
+
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   }
