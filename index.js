@@ -1,19 +1,19 @@
 const express = require('express');
-// const jwt = require('jsonwebtoken')
-// const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT | 5000;
 require('dotenv').config()
 const cors = require('cors');
 
-// app.use(cors({
-//   origin: [
-//     'http://localhost:5173',
-//     'https://company-evaluation-platform-server.vercel.app'
-//   ],
-//   credentials: true
-// }))
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://company-evaluation-platform-server.vercel.app'
+  ],
+  credentials: true
+}))
 
 app.use(cors());
 app.use(express.json());
