@@ -1,20 +1,20 @@
 const express = require('express');
 const app = express();
 const SSLCommerzPayment = require('sslcommerz-lts')
-const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
+// const jwt = require('jsonwebtoken');
+// const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT | 5000;
 require('dotenv').config()
 const cors = require('cors');
 
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://company-evaluation-platform-server.vercel.app'
-  ],
-  credentials: true
-}))
+// app.use(cors({
+//   origin: [
+//     'http://localhost:5173',
+//     'https://company-evaluation-platform-server.vercel.app'
+//   ],
+//   credentials: true
+// }))
 
 app.use(cors());
 app.use(express.json());
@@ -39,7 +39,7 @@ const client = new MongoClient(uri, {
 
 const store_id = process.env.STORE_ID;
 const store_passwd = process.env.STORE_PASS;
-const is_live = false //true for live, false for sandbox
+const is_live = false //true for live, false for sandbox;
 
 async function run() {
   try {
@@ -300,8 +300,8 @@ async function run() {
         companyName: allInfo?.company,
         success_url: `http://localhost:5000/paymentSuccess/${tran_id}`,
         fail_url: `http://localhost:5000/paymentFail/${tran_id}`,
-        cancel_url: 'http://localhost:3030/cancel',
-        ipn_url: 'http://localhost:3030/ipn',
+        cancel_url: 'http://localhost:5000/cancel',
+        ipn_url: 'http://localhost:5000/ipn',
         shipping_method: 'Courier',
         product_name: 'Computer.',
         product_category: 'Electronic',
@@ -325,19 +325,20 @@ async function run() {
       const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live)
       sslcz.init(data).then(apiResponse => {
         // Redirect the user to payment gateway
-        let GatewayPageURL = apiResponse.GatewayPageURL
+        let GatewayPageURL = apiResponse.GatewayPageURL;
         res.send({ url: GatewayPageURL })
         const allData = {
           employeeInfo,
           tranjectionId: tran_id,
           paymentSuccess: false,
           date: allInfo?.date,
+          currency : data?.currency,
+          salary : data?.total_amount,
         }
         const result = paymentCollection.insertOne(allData)
       });
 
       app.post("/paymentSuccess/:tranId", async (req, res) => {
-        console.log("tranId", req.params.tranId);
         const filter = { tranjectionId: req.params.tranId };
         const updateDoc = {
           $set: {
