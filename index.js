@@ -1,30 +1,13 @@
 const express = require('express');
 const app = express();
-const SSLCommerzPayment = require('sslcommerz-lts')
-// const jwt = require('jsonwebtoken');
-// const cookieParser = require('cookie-parser');
+const SSLCommerzPayment = require('sslcommerz-lts');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT | 5000;
 require('dotenv').config()
 const cors = require('cors');
 
-// app.use(cors({
-//   origin: [
-//     'http://localhost:5173',
-//     'https://company-evaluation-platform-server.vercel.app'
-//   ],
-//   credentials: true
-// }))
-
 app.use(cors());
 app.use(express.json());
-app.use(cookieParser())
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -42,7 +25,6 @@ const is_live = false //true for live, false for sandbox;
 
 async function run() {
   try {
-
     const reviewCollection = client.db("iOne").collection("reviews");
     const userCollection = client.db("iOne").collection("users");
     const noticeCollection = client.db("iOne").collection("notices");
@@ -69,8 +51,6 @@ async function run() {
     })
 
     app.get('/imployeeTasks', async (req, res) => {
-      // const email = req.query.email;
-      // const filter = { email }
       const result = await imployeeTasksCollection.find().toArray()
       res.send(result)
     })
@@ -113,18 +93,6 @@ async function run() {
       res.send(result);
 
     })
-
-    app.post('/jwt', async (req, res) => {
-      const user = req.body
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-      res
-        .cookie('token', token, {
-          httpOnly: true,
-          secure: false
-        })
-        .send({ success: true })
-    })
-
 
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
