@@ -18,14 +18,13 @@ const cors = require('cors');
 
 app.use(cors());
 app.use(express.json());
-
-// app.use(cookieParser())
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-//   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-//   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-//   next();
-// });
+app.use(cookieParser())
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -70,6 +69,8 @@ async function run() {
     })
 
     app.get('/imployeeTasks', async (req, res) => {
+      // const email = req.query.email;
+      // const filter = { email }
       const result = await imployeeTasksCollection.find().toArray()
       res.send(result)
     })
@@ -94,6 +95,10 @@ async function run() {
       res.send(result)
     })
 
+    app.get("/hrAndUsers", async (req, res) => {
+      const result = await hrAndUserCollection.find().toArray();
+      res.send(result);
+    })
     app.put("/moveTask", async (req, res) => {
       const task = req.query.task;
       const id = req.query.id;
@@ -106,18 +111,19 @@ async function run() {
       };
       const result = await imployeeTasksCollection.updateOne(filter, updateDoc, options);
       res.send(result);
+
     })
 
-    // app.post('/jwt', async (req, res) => {
-    //   const user = req.body
-    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-    //   res
-    //     .cookie('token', token, {
-    //       httpOnly: true,
-    //       secure: false
-    //     })
-    //     .send({ success: true })
-    // })
+    app.post('/jwt', async (req, res) => {
+      const user = req.body
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+      res
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: false
+        })
+        .send({ success: true })
+    })
 
 
     app.get("/reviews", async (req, res) => {
@@ -278,6 +284,7 @@ async function run() {
       res.send(result)
     })
 
+
     app.get("/meetLink", async (req, res) => {
       const result = await hrShareMeetCollection.find().toArray();
       return res.send(result);
@@ -370,9 +377,11 @@ async function run() {
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
+  }
+  finally {
   }
 }
+
 run().catch(console.dir);
 
 
