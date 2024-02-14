@@ -307,8 +307,8 @@ async function run() {
           tranjectionId: tran_id,
           paymentSuccess: false,
           date: allInfo?.date,
-          currency : data?.currency,
-          salary : data?.total_amount,
+          currency: data?.currency,
+          salary: data?.total_amount,
         }
         const result = paymentCollection.insertOne(allData)
       });
