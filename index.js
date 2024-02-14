@@ -131,6 +131,13 @@ async function run() {
       res.send(result);
     })
 
+    app.post("/reviews",async(req,res)=>{
+      const reviewsBody =req.body;
+      const result =await reviewCollection.insertOne(reviewsBody);
+      res.send(result)
+    })
+
+
     app.post("/user", async (req, res) => {
       const userInfo = req.body;
       const userEmail = userInfo?.email;
@@ -160,7 +167,9 @@ async function run() {
       const isHr = findUser?.role === "hr";
       res.send({ isHr })
     })
-
+ 
+ 
+    
     app.post("/formDetails", async (req, res) => {
       const formInfo = req?.body;
       const email = formInfo?.email;
@@ -372,6 +381,18 @@ async function run() {
     app.get("/payments", async (req, res) => {
       const result = await paymentCollection.find().toArray();
       res.send(result);
+    })
+
+    app.get("/payments/:email", async (req, res) => {
+      const query = { email: req.params.email }
+      if (req.params.email) {
+        const result = await paymentCollection.find(query).toArray();
+        res.send(result);
+
+      } else {
+        return res.status(403).send({ message: "forbidden access" })
+      }
+
     })
 
     await client.db("admin").command({ ping: 1 });
