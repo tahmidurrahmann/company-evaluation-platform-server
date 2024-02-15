@@ -99,6 +99,13 @@ async function run() {
       res.send(result);
     })
 
+    app.post("/reviews",async(req,res)=>{
+      const reviewsBody =req.body;
+      const result =await reviewCollection.insertOne(reviewsBody);
+      res.send(result)
+    })
+
+
     app.post("/user", async (req, res) => {
       const userInfo = req.body;
       const userEmail = userInfo?.email;
@@ -128,7 +135,9 @@ async function run() {
       const isHr = findUser?.role === "hr";
       res.send({ isHr })
     })
-
+ 
+ 
+    
     app.post("/formDetails", async (req, res) => {
       const formInfo = req?.body;
       const email = formInfo?.email;
@@ -342,6 +351,8 @@ async function run() {
       const result = await paymentCollection.find().toArray();
       res.send(result);
     })
+
+ 
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
