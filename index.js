@@ -7,23 +7,26 @@ const port = process.env.PORT | 5000;
 require('dotenv').config()
 const cors = require('cors');
 
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://company-evaluation-platform-server.vercel.app'
-  ],
-  credentials: true
-}))
+// app.use(cors({
+//   origin: [
+//     'http://localhost:5173',
+//     'https://evaluation-platform-client.web.app'
+//   ],
+//   credentials: true
+// }))
 
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser())
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+//   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+//   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//   next();
+// });
+
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -277,7 +280,10 @@ async function run() {
       const result = await hrShareMeetCollection.insertOne(MeetLinks)
       res.send(result)
     })
-
+    app.get('/meetLink', async (req, res) => {
+      const result = await hrShareMeetCollection.find().toArray();
+      return res.send(result);
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
