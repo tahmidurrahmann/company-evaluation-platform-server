@@ -115,6 +115,23 @@ async function run() {
       }
     });
 
+    app.post("/disLikeTask/:id", async (req, res) => {
+      const taskId = req.params.id;
+      try {
+        await imployeeTasksCollection.updateOne(
+          { _id: new ObjectId(taskId) },
+          { $set: { disLiked: true, status: "doing" } }
+        );
+        const updatedTask = await imployeeTasksCollection.findOne({
+          _id: new ObjectId(taskId),
+        });
+        res.json({ message: "Task liked successfully", task: updatedTask });
+      } catch (error) {
+        console.error("Error liking task:", error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
     app.get("/hrAndUsers", async (req, res) => {
       const result = await hrAndUserCollection.find().toArray();
       res.send(result);
