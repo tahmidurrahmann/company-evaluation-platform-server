@@ -56,9 +56,7 @@ async function run() {
     const noticeCollection = client.db("iOne").collection("notices");
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
     const employeeCollection = client.db("iOne").collection("employee");
-    const imployeeTasksCollection = client
-      .db("iOne")
-      .collection("imployeeTasks");
+    const imployeeTasksCollection = client.db("iOne").collection("imployeeTasks");
     const hrShareMeetCollection = client.db("iOne").collection("meetLink");
     const paymentCollection = client.db("iOne").collection("payments");
 
@@ -110,6 +108,23 @@ async function run() {
         await imployeeTasksCollection.updateOne(
           { _id: new ObjectId(taskId) },
           { $set: { liked: true } }
+        );
+        const updatedTask = await imployeeTasksCollection.findOne({
+          _id: new ObjectId(taskId),
+        });
+        res.json({ message: "Task liked successfully", task: updatedTask });
+      } catch (error) {
+        console.error("Error liking task:", error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
+    app.post("/disLikeTask/:id", async (req, res) => {
+      const taskId = req.params.id;
+      try {
+        await imployeeTasksCollection.updateOne(
+          { _id: new ObjectId(taskId) },
+          { $set: { disLiked: true, status: "doing" } }
         );
         const updatedTask = await imployeeTasksCollection.findOne({
           _id: new ObjectId(taskId),
