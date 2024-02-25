@@ -33,6 +33,7 @@ async function run() {
     const imployeeTasksCollection = client.db("iOne").collection("imployeeTasks");
     const hrShareMeetCollection = client.db("iOne").collection("meetLink");
     const paymentCollection = client.db("iOne").collection("payments");
+    const hrMessageCollection = client.db("iOne").collection("hrMessages");
 
     app.post("/imployeeTasks", async (req, res) => {
       const newTask = req.body;
