@@ -146,7 +146,6 @@ async function run() {
       res.send(result)
     })
 
-
     app.post("/user", async (req, res) => {
       const userInfo = req.body;
       const userEmail = userInfo?.email;
@@ -173,9 +172,10 @@ async function run() {
       const query = { email: email };
       const findUser = await userCollection.findOne(query);
       const isHr = findUser?.role === "hr";
-
       res.send({ isHr });
     });
+     
+
     app.post("/formDetails", async (req, res) => {
       const formInfo = req?.body;
       const email = formInfo?.email;
