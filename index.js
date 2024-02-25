@@ -416,10 +416,25 @@ async function run() {
       res.send(result);
     })
 
-    app.get("/paymentHistory",async(req,res)=>{
-      const result =await paymentCollection.find().toArray()
-      res.send(result)
-    })
+    // app.get("/paymentHistory", async (req, res) => {
+    //   const filter = req.query;
+    //   const query = {};
+    //   const sortDirection = filter.sort === 'asc' ? 1 : -1;
+    //   const option = {
+    //     sort: {
+    //       salary: sortDirection
+    //     }
+    //   };
+    //   console.log(option);
+    //   try {
+    //     const result = await paymentCollection.find(query).sort(option.sort).toArray();
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error("Error fetching payment history:", error);
+    //     res.status(500).send("Internal Server Error");
+    //   }
+    // });
+
 
 
     await client.db("admin").command({ ping: 1 });
