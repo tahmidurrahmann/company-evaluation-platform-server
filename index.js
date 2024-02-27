@@ -33,7 +33,18 @@ async function run() {
     const imployeeTasksCollection = client.db("iOne").collection("imployeeTasks");
     const hrShareMeetCollection = client.db("iOne").collection("meetLink");
     const paymentCollection = client.db("iOne").collection("payments");
-    const hrMessageCollection = client.db("iOne").collection("hrMessages");
+    const messageCollection = client.db("iOne").collection("messages");
+
+    app.post("/messages", async (req, res) => {
+      const messageInfo = req.body;
+      const result = await messageCollection.insertOne(messageInfo);
+      res.send(result);
+    })
+
+    app.get("/messages", async (req, res) => {
+      const result = await messageCollection.find().toArray();
+      res.send(result);
+    })
 
     app.post("/imployeeTasks", async (req, res) => {
       const newTask = req.body;
@@ -174,7 +185,7 @@ async function run() {
       const isHr = findUser?.role === "hr";
       res.send({ isHr });
     });
-     
+
 
     app.post("/formDetails", async (req, res) => {
       const formInfo = req?.body;
@@ -406,8 +417,6 @@ async function run() {
     //     res.status(500).send("Internal Server Error");
     //   }
     // });
-
-
 
     await client.db("admin").command({ ping: 1 });
     console.log(
