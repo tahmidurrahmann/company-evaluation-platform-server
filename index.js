@@ -119,7 +119,7 @@ async function run() {
       try {
         await imployeeTasksCollection.updateOne(
           { _id: new ObjectId(taskId) },
-          { $set: { disLiked: true, status: "doing" } }
+          { $set: { status: "doing" } }
         );
         const updatedTask = await imployeeTasksCollection.findOne({
           _id: new ObjectId(taskId),
