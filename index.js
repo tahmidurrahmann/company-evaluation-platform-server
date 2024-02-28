@@ -1,10 +1,12 @@
-const SSLCommerzPayment = require('sslcommerz-lts')
-const express = require('express');
+const SSLCommerzPayment = require("sslcommerz-lts");
+
+const express = require("express");
 const app = express();
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT | 5000;
-require('dotenv').config()
-const cors = require('cors');
+
+require("dotenv").config();
+const cors = require("cors");
 
 app.use(cors());
 app.use(express.json());
@@ -21,7 +23,8 @@ const client = new MongoClient(uri, {
 
 const store_id = process.env.STORE_ID;
 const store_passwd = process.env.STORE_PASS;
-const is_live = false //true for live, false for sandbox;
+
+const is_live = false; //true for live, false for sandbox;
 
 async function run() {
   try {
@@ -30,7 +33,9 @@ async function run() {
     const noticeCollection = client.db("iOne").collection("notices");
     const hrAndUserCollection = client.db("iOne").collection("hrAndUsers");
     const employeeCollection = client.db("iOne").collection("employee");
-    const imployeeTasksCollection = client.db("iOne").collection("imployeeTasks");
+    const imployeeTasksCollection = client
+      .db("iOne")
+      .collection("imployeeTasks");
     const hrShareMeetCollection = client.db("iOne").collection("meetLink");
     const paymentCollection = client.db("iOne").collection("payments");
     const messageCollection = client.db("iOne").collection("messages");
@@ -62,11 +67,15 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/imployeeTasks", async (req, res) => {
+      const result = await imployeeTasksCollection.find().toArray();
+      res.send(result);
+    });
 
-    app.get('/imployeeTasks', async (req, res) => {
-      const result = await imployeeTasksCollection.find().toArray()
-      res.send(result)
-    })
+    app.get("/imployeeTasks", async (req, res) => {
+      const result = await imployeeTasksCollection.find().toArray();
+      res.send(result);
+    });
 
     app.get("/hrAndUsers/:id", async (req, res) => {
       const id = req.params.id;
@@ -104,7 +113,6 @@ async function run() {
         res.status(500).json({ error: "Internal server error" });
       }
     });
-
 
     app.post("/disLikeTask/:id", async (req, res) => {
       const taskId = req.params.id;
@@ -151,12 +159,6 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/reviews", async (req, res) => {
-      const reviewsBody = req.body;
-      const result = await reviewCollection.insertOne(reviewsBody);
-      res.send(result)
-    })
-
     app.post("/user", async (req, res) => {
       const userInfo = req.body;
       const userEmail = userInfo?.email;
@@ -185,7 +187,6 @@ async function run() {
       const isHr = findUser?.role === "hr";
       res.send({ isHr });
     });
-
 
     app.post("/formDetails", async (req, res) => {
       const formInfo = req?.body;
@@ -311,7 +312,6 @@ async function run() {
     app.get("/meetLink", async (req, res) => {
       const result = await hrShareMeetCollection.find().toArray();
       return res.send(result);
-
     });
 
     const tran_id = new ObjectId().toString();
@@ -331,73 +331,94 @@ async function run() {
         companyName: allInfo?.company,
         success_url: `https://company-evaluation-platform-server.vercel.app/paymentSuccess/${tran_id}`,
         fail_url: `https://company-evaluation-platform-server.vercel.app/paymentFail/${tran_id}`,
-        cancel_url: 'https://company-evaluation-platform-server.vercel.app/cancel',
-        ipn_url: 'https://company-evaluation-platform-server.vercel.app/ipn',
-        shipping_method: 'Courier',
-        product_name: 'Computer.',
-        product_category: 'Electronic',
-        product_profile: 'general',
-        cus_add1: 'Dhaka',
-        cus_add2: 'Dhaka',
-        cus_city: 'Dhaka',
-        cus_state: 'Dhaka',
-        cus_postcode: '1000',
-        cus_country: 'Bangladesh',
-        cus_phone: '01711111111',
-        cus_fax: '01711111111',
-        ship_name: 'Customer Name',
-        ship_add1: 'Dhaka',
-        ship_add2: 'Dhaka',
-        ship_city: 'Dhaka',
-        ship_state: 'Dhaka',
+        cancel_url:
+          "https://company-evaluation-platform-server.vercel.app/cancel",
+        ipn_url: "https://company-evaluation-platform-server.vercel.app/ipn",
+        shipping_method: "Courier",
+        product_name: "Computer.",
+        product_category: "Electronic",
+        product_profile: "general",
+        cus_add1: "Dhaka",
+        cus_add2: "Dhaka",
+        cus_city: "Dhaka",
+        cus_state: "Dhaka",
+        cus_postcode: "1000",
+        cus_country: "Bangladesh",
+        cus_phone: "01711111111",
+        cus_fax: "01711111111",
+        ship_name: "Customer Name",
+        ship_add1: "Dhaka",
+        ship_add2: "Dhaka",
+        ship_city: "Dhaka",
+        ship_state: "Dhaka",
         ship_postcode: 1000,
-        ship_country: 'Bangladesh',
+        ship_country: "Bangladesh",
       };
-      const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live)
-      sslcz.init(data).then(apiResponse => {
-        // Redirect the user to payment gateway
-        let GatewayPageURL = apiResponse.GatewayPageURL;
-        res.send({ url: GatewayPageURL })
-        const allData = {
-          employeeInfo,
-          tranjectionId: tran_id,
-          paymentSuccess: false,
-          date: allInfo?.date,
-          currency: data?.currency,
-          salary: data?.total_amount,
-        }
-        const result = paymentCollection.insertOne(allData)
-      });
 
       app.post("/paymentSuccess/:tranId", async (req, res) => {
-        const filter = { tranjectionId: req.params.tranId };
-        const updateDoc = {
-          $set: {
-            paymentSuccess: true,
-          }
-        }
-        const result = await paymentCollection.updateOne(filter, updateDoc);
+        try {
+          const filter = { tranjectionId: req.params.tranId };
+          const updateDoc = {
+            $set: {
+              paymentSuccess: true,
+            },
+          };
+          const result = await paymentCollection.updateOne(filter, updateDoc);
 
-        if (result?.modifiedCount > 0) {
-          res.redirect(`https://evaluation-platform-client.web.app/dashboard/paymentSuccess/${tran_id}`)
+          if (result?.modifiedCount > 0) {
+            res.redirect(
+              `https://evaluation-platform-client.web.app/dashboard/paymentSuccess/${req.params.tranId}`
+            );
+          } else {
+            console.log(
+              "No payment record found for the given transaction ID."
+            );
+            res
+              .status(404)
+              .send("No payment record found for the given transaction ID.");
+          }
+        } catch (error) {
+          console.error("Error updating payment record:", error);
+          res.status(500).send("Internal server error");
         }
-      })
+      });
 
       app.post("/paymentFail/:tranId", async (req, res) => {
         const tranId = req.params.tranId;
         const query = { tranjectionId: tranId };
         const result = await paymentCollection.deleteOne(query);
         if (result?.deletedCount > 0) {
-          res.redirect(`https://evaluation-platform-client.web.app/dashboard/paymentFail/${tran_id}`)
+          res.redirect(
+            `https://evaluation-platform-client.web.app/dashboard/paymentFail/${tran_id}`
+          );
         }
-      })
+      });
+    });
 
-    })
+    app.get("/payments", async (req, res) => {
+      try {
+        const userEmail = req.query.email; // Get user's email from query parameter
+        const page = parseInt(req.query.page) || 1; // Get page number from query parameter, default to 1
+        const limit = parseInt(req.query.limit) || 10; // Get limit from query parameter, default to 10
+
+        const skip = (page - 1) * limit;
+        const payments = await paymentCollection
+          .find({ "employeeInfo.email": userEmail })
+          .skip(skip)
+          .limit(limit)
+          .toArray();
+
+        res.json(payments);
+      } catch (error) {
+        console.error("Error fetching payment history:", error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
 
     app.get("/payments", async (req, res) => {
       const result = await paymentCollection.find().toArray();
       res.send(result);
-    })
+    });
 
     // app.get("/paymentHistory", async (req, res) => {
     //   const filter = req.query;
