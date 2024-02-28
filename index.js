@@ -180,6 +180,15 @@ async function run() {
       res.send({ isAdmin });
     });
 
+    app.get("/users/employee/:email",async(req,res)=>{
+      const email =req.params.email;
+      const query ={email : email};
+      const findEmployee = await employeeCollection.findOne(query);
+      const isEmployee = findEmployee?.status === "checked";
+    
+      res.send({isEmployee})
+    })
+
     app.get("/users/hr/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
