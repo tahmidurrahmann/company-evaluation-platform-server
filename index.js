@@ -404,7 +404,7 @@ async function run() {
       });
     });
 
-    app.get("/payments", async (req, res) => {
+    app.get("/paymentss", async (req, res) => {
       try {
         const userEmail = req.query.email; // Get user's email from query parameter
         const page = parseInt(req.query.page) || 1; // Get page number from query parameter, default to 1
