@@ -1,10 +1,8 @@
-const SSLCommerzPayment = require("sslcommerz-lts");
-
+const SSLCommerzPayment = require('sslcommerz-lts')
 const express = require("express");
 const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT | 5000;
-
 require("dotenv").config();
 const cors = require("cors");
 
@@ -23,8 +21,7 @@ const client = new MongoClient(uri, {
 
 const store_id = process.env.STORE_ID;
 const store_passwd = process.env.STORE_PASS;
-
-const is_live = false; //true for live, false for sandbox;
+const is_live = false //true for live, false for sandbox;
 
 async function run() {
   try {
@@ -180,13 +177,13 @@ async function run() {
       res.send({ isAdmin });
     });
 
-    app.get("/users/employee/:email",async(req,res)=>{
-      const email =req.params.email;
-      const query ={email : email};
+    app.get("/users/employee/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
       const findEmployee = await employeeCollection.findOne(query);
       const isEmployee = findEmployee?.status === "checked";
-    
-      res.send({isEmployee})
+
+      res.send({ isEmployee })
     })
 
     app.get("/users/hr/:email", async (req, res) => {
@@ -340,69 +337,68 @@ async function run() {
         companyName: allInfo?.company,
         success_url: `https://company-evaluation-platform-server.vercel.app/paymentSuccess/${tran_id}`,
         fail_url: `https://company-evaluation-platform-server.vercel.app/paymentFail/${tran_id}`,
-        cancel_url:
-          "https://company-evaluation-platform-server.vercel.app/cancel",
-        ipn_url: "https://company-evaluation-platform-server.vercel.app/ipn",
-        shipping_method: "Courier",
-        product_name: "Computer.",
-        product_category: "Electronic",
-        product_profile: "general",
-        cus_add1: "Dhaka",
-        cus_add2: "Dhaka",
-        cus_city: "Dhaka",
-        cus_state: "Dhaka",
-        cus_postcode: "1000",
-        cus_country: "Bangladesh",
-        cus_phone: "01711111111",
-        cus_fax: "01711111111",
-        ship_name: "Customer Name",
-        ship_add1: "Dhaka",
-        ship_add2: "Dhaka",
-        ship_city: "Dhaka",
-        ship_state: "Dhaka",
+        cancel_url: 'https://company-evaluation-platform-server.vercel.app/cancel',
+        ipn_url: 'https://company-evaluation-platform-server.vercel.app/ipn',
+        shipping_method: 'Courier',
+        product_name: 'Computer.',
+        product_category: 'Electronic',
+        product_profile: 'general',
+        cus_add1: 'Dhaka',
+        cus_add2: 'Dhaka',
+        cus_city: 'Dhaka',
+        cus_state: 'Dhaka',
+        cus_postcode: '1000',
+        cus_country: 'Bangladesh',
+        cus_phone: '01711111111',
+        cus_fax: '01711111111',
+        ship_name: 'Customer Name',
+        ship_add1: 'Dhaka',
+        ship_add2: 'Dhaka',
+        ship_city: 'Dhaka',
+        ship_state: 'Dhaka',
         ship_postcode: 1000,
-        ship_country: "Bangladesh",
+        ship_country: 'Bangladesh',
       };
+      const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live)
+      sslcz.init(data).then(apiResponse => {
+        // Redirect the user to payment gateway
+        let GatewayPageURL = apiResponse.GatewayPageURL;
+        res.send({ url: GatewayPageURL })
+        const allData = {
+          employeeInfo,
+          tranjectionId: tran_id,
+          paymentSuccess: false,
+          date: allInfo?.date,
+          currency: data?.currency,
+          salary: data?.total_amount,
+        }
+        const result = paymentCollection.insertOne(allData)
+      });
 
       app.post("/paymentSuccess/:tranId", async (req, res) => {
-        try {
-          const filter = { tranjectionId: req.params.tranId };
-          const updateDoc = {
-            $set: {
-              paymentSuccess: true,
-            },
-          };
-          const result = await paymentCollection.updateOne(filter, updateDoc);
-
-          if (result?.modifiedCount > 0) {
-            res.redirect(
-              `https://evaluation-platform-client.web.app/dashboard/paymentSuccess/${req.params.tranId}`
-            );
-          } else {
-            console.log(
-              "No payment record found for the given transaction ID."
-            );
-            res
-              .status(404)
-              .send("No payment record found for the given transaction ID.");
+        const filter = { tranjectionId: req.params.tranId };
+        const updateDoc = {
+          $set: {
+            paymentSuccess: true,
           }
-        } catch (error) {
-          console.error("Error updating payment record:", error);
-          res.status(500).send("Internal server error");
         }
-      });
+        const result = await paymentCollection.updateOne(filter, updateDoc);
+
+        if (result?.modifiedCount > 0) {
+          res.redirect(`https://evaluation-platform-client.web.app/dashboard/paymentSuccess/${tran_id}`)
+        }
+      })
 
       app.post("/paymentFail/:tranId", async (req, res) => {
         const tranId = req.params.tranId;
         const query = { tranjectionId: tranId };
         const result = await paymentCollection.deleteOne(query);
         if (result?.deletedCount > 0) {
-          res.redirect(
-            `https://evaluation-platform-client.web.app/dashboard/paymentFail/${tran_id}`
-          );
+          res.redirect(`https://evaluation-platform-client.web.app/dashboard/paymentFail/${tran_id}`)
         }
-      });
-    });
+      })
+
+    })
 
     app.get("/paymentss", async (req, res) => {
       try {
@@ -428,25 +424,6 @@ async function run() {
       const result = await paymentCollection.find().toArray();
       res.send(result);
     });
-
-    // app.get("/paymentHistory", async (req, res) => {
-    //   const filter = req.query;
-    //   const query = {};
-    //   const sortDirection = filter.sort === 'asc' ? 1 : -1;
-    //   const option = {
-    //     sort: {
-    //       salary: sortDirection
-    //     }
-    //   };
-    //   console.log(option);
-    //   try {
-    //     const result = await paymentCollection.find(query).sort(option.sort).toArray();
-    //     res.send(result);
-    //   } catch (error) {
-    //     console.error("Error fetching payment history:", error);
-    //     res.status(500).send("Internal Server Error");
-    //   }
-    // });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
