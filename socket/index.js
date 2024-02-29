@@ -8,7 +8,7 @@ let activeUsers = [];
 
 io.on("connection", (socket) => {
     socket.on("new-user-add", (newUserId) => {
-        if (!activeUsers.some((user) => user._id === newUserId)) {
+        if (!activeUsers.some((user) => user.email === newUserId)) {
             activeUsers.push({ userId: newUserId, socketId: socket.id });
         }
         // Send all active users to new user
@@ -16,17 +16,28 @@ io.on("connection", (socket) => {
         io.emit("get-users", activeUsers);
     });
 
-
     // Listening for "send-message" if you choose to use this event name
     socket.on("send-message", (data) => {
-        const { id } = data;
-        const user = activeUsers.find((user) => user.userId === id);
-        console.log("Sending from socket to:", id);
-        console.log("Data:", data);
+        console.log("send", data);
+        const { senderMail } = data;
+        const user = activeUsers.find((user) => user.userId === senderMail);
         if (user) {
             io.to(user.socketId).emit("receive-message", data);
         }
     });
+
+    // socket.on("sendMessage", ({ senderId, receiverId, text }) => {
+    //     console.log(senderId, receiverId, text);
+    //     const user = getUser(receiverId);
+    //     console.log(user);
+    //     io.to(user?.socketId).emit("getMessage", {
+    //         senderId,
+    //         text,
+    //     });
+    // });
+
+
+    console.log("active", activeUsers);
 
     socket.on("disconnect", () => {
         // Remove user from active users
