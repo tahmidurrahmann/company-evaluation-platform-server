@@ -325,16 +325,14 @@ async function run() {
     app.post("/salary", async (req, res) => {
       const allInfo = req?.body;
       const salary = parseInt(allInfo?.salary);
-      const emailEmployee = allInfo?.email;
-      const employeeEmail = { email: emailEmployee };
-      const employeeInfo = await employeeCollection.findOne(employeeEmail);
+      const employeeInfo = allInfo?.myEmployee;
+      const names = employeeInfo?.map(item => item.name);
+      const emails = employeeInfo?.map(item => item.email);
       const data = {
         total_amount: salary,
-        currency: allInfo?.currency,
         tran_id: tran_id, // use unique tran_id for each api call
-        cus_name: allInfo?.name,
-        cus_email: allInfo?.email,
-        companyName: allInfo?.company,
+        cus_name: names[0],
+        cus_email: emails[0],
         success_url: `https://company-evaluation-platform-server.vercel.app/paymentSuccess/${tran_id}`,
         fail_url: `https://company-evaluation-platform-server.vercel.app/paymentFail/${tran_id}`,
         cancel_url: 'https://company-evaluation-platform-server.vercel.app/cancel',
@@ -369,8 +367,8 @@ async function run() {
           tranjectionId: tran_id,
           paymentSuccess: false,
           date: allInfo?.date,
-          currency: data?.currency,
           salary: data?.total_amount,
+          email: allInfo?.hrEmail,
         }
         const result = paymentCollection.insertOne(allData)
       });
@@ -439,6 +437,25 @@ app.get("/", (req, res) => {
   res.send("Company Evaluation Platform is Running");
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Company Evaluation Platform is Running on port ${port}`);
+});
+
+const io = require('socket.io')(server, {
+  pingTimeout: 60000,
+  cors: {
+    origin: "http://localhost:5173",
+  }
+});
+
+io.on("connection", (socket) => {
+  socket.on("send-message", (data) => {
+    io.emit("receive-message", data);
+  });
+
+  // Handle disconnection
+  socket.on("disconnect", () => {
+    console.log("A user disconnected");
+    // Handle any disconnection logic if needed
+  });
 });
